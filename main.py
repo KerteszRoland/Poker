@@ -11,8 +11,7 @@ class Card:
         if isinstance(other, Card):
             return self.display == other.display
         return False
-    
-    
+
     def GetValue(self):
         rank = self.rank
         if rank.isnumeric():
@@ -27,16 +26,13 @@ class Card:
             return 14
 
 
-
-
 class Hand:
     
-    def __init__(self, cards=[]):
-        if len(cards):
-            self.cards = cards
-        else:
+    def __init__(self, cards=None):
+        if cards is None:
             self.cards = []
-
+        else:
+            self.cards = cards
 
     def __repr__(self):
         return "".join([x.display for x in self.cards])
@@ -44,42 +40,39 @@ class Hand:
 
 class CommunityCards:
     
-    def __init__(self, cards=[]):
-        if len(cards):
-            self.cards = cards
-        else:
+    def __init__(self, cards=None):
+        if cards is None:
             self.cards = []
+        else:
+            self.cards = cards
 
     def __repr__(self):
         return "".join([x.display for x in self.cards])
-
 
     def GetFlop(self):
         if len(self.cards) < 3:
             return None
         return self.cards[:3]
-  
-  
+
     def GetTurn(self):
         if len(self.cards) < 4:
             return None
         return self.cards[3]
-        
-        
+
     def GetRiver(self):
         if len(self.cards) < 5:
             return None
         return self.cards[4]
-   
-   
+
     def PushFlop(self, card_list):
-        if len(card_list) != 3 or type(card_list[0]) != Card or type(card_list[1]) != Card or type(card_list[2]) != Card:
+        card_list_types = [type(x) for x in card_list]
+        wrong_type = Card in card_list_types
+        if len(card_list) != 3 or wrong_type:
             raise AttributeError("Flop should contain 3 cards!")
         if len(self.cards) != 0:
             raise Exception("Flop already pushed!")
         self.cards.extend(card_list)
-    
-    
+
     def PushTurn(self, card):
         if type(card) != Card:
             raise TypeError("You must pass a card type to this function!")
@@ -89,7 +82,6 @@ class CommunityCards:
             raise Exception("Turn already pushed!")
         self.cards.append(card)
 
-
     def PushRiver(self, card):
         if type(card) != Card:
             raise TypeError("You must pass a card type to this function!")
@@ -98,12 +90,3 @@ class CommunityCards:
         if len(self.cards) > 4:
             raise Exception("Turn already pushed!")
         self.cards.append(card)
-        
-        
-        
-        
-        
-        
-        
-        
-        

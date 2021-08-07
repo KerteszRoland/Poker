@@ -15,14 +15,14 @@ def GetDeck():
     
 DECK = GetDeck()
 
+
 class TestCard(unittest.TestCase):
-    
+
     def test_two_instances_are_equal(self):
         card1 = main.Card("As")
         card2 = main.Card("As")
         self.assertEqual(card1, card2)
-    
-    
+
     def test_value(self):
         cards = DECK[:13]
         values = []
@@ -31,8 +31,7 @@ class TestCard(unittest.TestCase):
             values.append(card.value)
         correct_values = list(range(2, 15))
         self.assertEqual(values, correct_values)
-        
-        
+
     def test_rank(self):
         cards = DECK[:13]
         ranks = []
@@ -41,8 +40,7 @@ class TestCard(unittest.TestCase):
             ranks.append(card.rank)
         correct_ranks = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"]
         self.assertEqual(ranks, correct_ranks)
-        
-        
+
     def test_suit(self):
         cards = ["8s", "10s", "As", "8c", "10c", "Ac", "8d", "10d", "Ad", "8h", "10h", "Ah"]
         suits = []
@@ -51,8 +49,7 @@ class TestCard(unittest.TestCase):
             suits.append(card.suit)
         correct_suits = list("s"*3)+list("c"*3)+list("d"*3)+list("h"*3)
         self.assertEqual(suits, correct_suits)
-        
-        
+
     def test_display(self):
         cards = DECK[:13]
         displays = []
@@ -61,26 +58,22 @@ class TestCard(unittest.TestCase):
             displays.append(card.display)
         correct_displays = cards
         self.assertEqual(displays, correct_displays)
-        
-        
+
     def test_init_capital_suit(self):
         card_str = "AH"
         card = main.Card(card_str)
         self.assertTrue(card.suit == "h")
-    
-    
+
     def test_init_lower_rank(self):
         card_str = "kc"
         card = main.Card(card_str)
         self.assertTrue(card.rank == "K")
-    
-    
+
     def test_init_lower_rank_capital_suit(self):
         card_str = "jD"
         card = main.Card(card_str)
         self.assertTrue(card.rank == "J" and card.suit == "d")
         
-
 
 class TestHand(unittest.TestCase):
    
@@ -88,19 +81,16 @@ class TestHand(unittest.TestCase):
         hand = main.Hand()
         self.assertEqual(str(hand), "")
 
-
     def test_str_one_card(self):
         card1 = main.Card("Qc")
         hand = main.Hand([card1])
         self.assertEqual(str(hand), "Qc")
-
 
     def test_str_two_card(self):
         card1 = main.Card("Kd")
         card2 = main.Card("Js")
         hand = main.Hand([card1, card2])
         self.assertEqual(str(hand), "KdJs")
-
 
     def test_str_four_card(self):
         card1 = main.Card("Js")
@@ -117,33 +107,27 @@ class CommunityCards(unittest.TestCase):
         comm_cards = main.CommunityCards()
         self.assertTrue(len(comm_cards.cards) == 0)
 
-
     def test_str_empty(self):
         comm_cards = main.CommunityCards()
         self.assertEqual(str(comm_cards), "")
 
-
     def test_get_flop_before_pushing(self):
         comm_cards = main.CommunityCards()
         self.assertEqual(comm_cards.GetFlop(), None)
-    
-    
+
     def test_get_turn_before_pushing(self):
         comm_cards = main.CommunityCards()
         self.assertEqual(comm_cards.GetTurn(), None)
 
-
     def test_get_river_before_pushing(self):
         comm_cards = main.CommunityCards()
         self.assertEqual(comm_cards.GetRiver(), None)
-
 
     def test_get_flop(self):
         flop = [main.Card("2h"), main.Card("3h"), main.Card("4h")]
         comm_cards = main.CommunityCards()
         comm_cards.PushFlop(flop)
         self.assertEqual(comm_cards.GetFlop(), flop)
-
 
     def test_push_flop(self):
         card1 = main.Card("10h")
@@ -154,20 +138,17 @@ class CommunityCards(unittest.TestCase):
         comm_cards.PushFlop(flop)
         self.assertEqual(comm_cards.cards, flop)
     
-    
     def test_cannot_push_empty_flop(self):
         with self.assertRaises(AttributeError):
             flop = []
             comm_cards = main.CommunityCards()
             comm_cards.PushFlop(flop)
-            
-            
+
     def test_cannot_push_non_card_flop(self):
         with self.assertRaises(AttributeError):
-            flop = [1,2,3]
+            flop = [1, 2, 3]
             comm_cards = main.CommunityCards()
             comm_cards.PushFlop(flop)
-
 
     def test_cannot_push_flop_multiple_times(self):
         with self.assertRaises(Exception):
@@ -179,7 +160,6 @@ class CommunityCards(unittest.TestCase):
             comm_cards.PushFlop(flop)
             comm_cards.PushFlop(flop)
 
-
     def test_push_turn(self):
         turn_card = main.Card("Ad")
         flop_cards = [main.Card("2s"), main.Card("7h"), main.Card("8c")]
@@ -189,7 +169,6 @@ class CommunityCards(unittest.TestCase):
         updated_comm_cards = flop_cards
         updated_comm_cards.append(turn_card)
         self.assertEqual(comm_cards.cards, updated_comm_cards)
-
 
 
 if __name__ == "__main__":
