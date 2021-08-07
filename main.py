@@ -65,8 +65,8 @@ class CommunityCards:
         return self.cards[4]
 
     def PushFlop(self, card_list):
-        card_list_types = [type(x) for x in card_list]
-        wrong_type = Card in card_list_types
+        card_list_types = [x for x in card_list if type(x) != Card]
+        wrong_type = bool(card_list_types)
         if len(card_list) != 3 or wrong_type:
             raise AttributeError("Flop should contain 3 cards!")
         if len(self.cards) != 0:
