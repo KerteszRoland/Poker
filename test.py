@@ -12,6 +12,11 @@ def GetDeck():
             deck.append(rank+suit)
     return deck
 
+def GetCompleteCommCards():
+    cards = [main.Card("Ad"), main.Card("Qc"), main.Card("Kh"), main.Card("5s"), main.Card("10c")]
+    comm_cards = main.CommunityCards(cards)
+    return comm_cards
+
 
 class TestCard(unittest.TestCase):
 
@@ -98,7 +103,9 @@ class TestHand(unittest.TestCase):
         self.assertEqual(str(hand), "JsQcKdAh")
 
 
-class CommunityCards(unittest.TestCase):
+
+
+class TestCommunityCards(unittest.TestCase):
     
     def test_init_empty(self):
         comm_cards = main.CommunityCards()
@@ -122,26 +129,21 @@ class CommunityCards(unittest.TestCase):
 
     def test_get_flop(self):
         flop = [main.Card("2h"), main.Card("3h"), main.Card("4h")]
-        comm_cards = main.CommunityCards()
-        comm_cards.PushFlop(flop)
+        comm_cards = main.CommunityCards(flop)
         self.assertEqual(comm_cards.GetFlop(), flop)
 
     def test_get_turn(self):
+        cards = [main.Card("2s"), main.Card("7h"), main.Card("8c")]
         turn_card = main.Card("Ad")
-        flop_cards = [main.Card("2s"), main.Card("7h"), main.Card("8c")]
-        comm_cards = main.CommunityCards()
-        comm_cards.PushFlop(flop_cards)
-        comm_cards.PushTurn(turn_card)
+        cards.append(turn_card)
+        comm_cards = main.CommunityCards(cards)
         self.assertEqual(comm_cards.GetTurn(), turn_card)
 
     def test_get_river(self):
-        flop_cards = [main.Card("2s"), main.Card("7h"), main.Card("8c")]
-        turn_card = main.Card("Ad")
+        cards = [main.Card("2s"), main.Card("7h"), main.Card("8c"), main.Card("Ad")]
         river_card = main.Card("Jc")
-        comm_cards = main.CommunityCards()
-        comm_cards.PushFlop(flop_cards)
-        comm_cards.PushTurn(turn_card)
-        comm_cards.PushRiver(river_card)
+        cards.append(river_card)
+        comm_cards = main.CommunityCards(cards)
         self.assertEqual(comm_cards.GetRiver(), river_card)
 
     def test_push_flop(self):
@@ -153,23 +155,18 @@ class CommunityCards(unittest.TestCase):
     def test_push_turn(self):
         turn_card = main.Card("Ad")
         flop_cards = [main.Card("2s"), main.Card("7h"), main.Card("8c")]
-        comm_cards = main.CommunityCards()
-        comm_cards.PushFlop(flop_cards)
+        comm_cards = main.CommunityCards(flop_cards)
         comm_cards.PushTurn(turn_card)
         updated_comm_cards = flop_cards
         updated_comm_cards.append(turn_card)
         self.assertEqual(comm_cards.cards, updated_comm_cards)
 
     def test_push_river(self):
-        flop_cards = [main.Card("2s"), main.Card("7h"), main.Card("8c")]
-        turn_card = main.Card("Ad")
+        cards = [main.Card("2s"), main.Card("7h"), main.Card("8c"), main.Card("Ad")]
         river_card = main.Card("Jc")
-        comm_cards = main.CommunityCards()
-        comm_cards.PushFlop(flop_cards)
-        comm_cards.PushTurn(turn_card)
+        comm_cards = main.CommunityCards(cards)
         comm_cards.PushRiver(river_card)
-        updated_comm_cards = flop_cards
-        updated_comm_cards.append(turn_card)
+        updated_comm_cards = cards
         updated_comm_cards.append(river_card)
         self.assertEqual(comm_cards.cards, updated_comm_cards)
 
@@ -188,24 +185,18 @@ class CommunityCards(unittest.TestCase):
     def test_cannot_push_non_card_turn(self):
         with self.assertRaises(TypeError):
             flop_cards = [main.Card("2s"), main.Card("7h"), main.Card("8c")]
-            comm_cards = main.CommunityCards()
-            comm_cards.PushFlop(flop_cards)
+            comm_cards = main.CommunityCards(flop_cards)
             comm_cards.PushTurn(5)
 
     def test_cannot_push_non_card_river(self):
         with self.assertRaises(TypeError):
-            flop_cards = [main.Card("2s"), main.Card("7h"), main.Card("8c")]
-            comm_cards = main.CommunityCards()
-            comm_cards.PushFlop(flop_cards)
-            comm_cards.PushTurn(main.Card("5h"))
+            cards = [main.Card("2s"), main.Card("7h"), main.Card("8c"), main.Card("5h")]
+            comm_cards = main.CommunityCards(cards)
             comm_cards.PushRiver(9)
 
     def test_cannot_push_flop_multiple_times(self):
         with self.assertRaises(Exception):
-            card1 = main.Card("10h")
-            card2 = main.Card("Jh")
-            card3 = main.Card("Qh")
-            flop = [card1, card2, card3]
+            flop = [main.Card("10h"), main.Card("Jh"), main.Card("Qh")]
             comm_cards = main.CommunityCards()
             comm_cards.PushFlop(flop)
             comm_cards.PushFlop(flop)
@@ -214,27 +205,22 @@ class CommunityCards(unittest.TestCase):
         with self.assertRaises(Exception):
             turn_card = main.Card("Ad")
             flop_cards = [main.Card("2s"), main.Card("7h"), main.Card("8c")]
-            comm_cards = main.CommunityCards()
-            comm_cards.PushFlop(flop_cards)
+            comm_cards = main.CommunityCards(flop_cards)
             comm_cards.PushTurn(turn_card)
             comm_cards.PushTurn(turn_card)
 
     def test_cannot_push_river_multiple_times(self):
         with self.assertRaises(Exception):
-            flop_cards = [main.Card("2s"), main.Card("7h"), main.Card("8c")]
-            turn_card = main.Card("Ad")
+            cards = [main.Card("2s"), main.Card("7h"), main.Card("8c"), main.Card("Ad")]
             river_card = main.Card("Qc")
-            comm_cards = main.CommunityCards()
-            comm_cards.PushFlop(flop_cards)
-            comm_cards.PushTurn(turn_card)
+            comm_cards = main.CommunityCards(cards)
             comm_cards.PushRiver(river_card)
             comm_cards.PushRiver(river_card)
 
     def test_cannot_push_turn_before_flop(self):
         with self.assertRaises(Exception):
-            turn_card = main.Card("Ad")
             comm_cards = main.CommunityCards()
-            comm_cards.PushTurn(turn_card)
+            comm_cards.PushTurn(main.Card("Ad"))
 
     def test_cannot_push_river_before_flop(self):
         with self.assertRaises(Exception):
@@ -245,9 +231,17 @@ class CommunityCards(unittest.TestCase):
         with self.assertRaises(Exception):
             flop_cards = [main.Card("2s"), main.Card("7h"), main.Card("8c")]
             river_card = main.Card("Qc")
-            comm_cards = main.CommunityCards()
-            comm_cards.PushFlop(flop_cards)
+            comm_cards = main.CommunityCards(flop_cards)
             comm_cards.PushRiver(river_card)
+
+    def test_get_suits(self):
+        cards = [main.Card("Ad"), main.Card("Qc"), main.Card("Kh"),
+                 main.Card("5s"), main.Card("10c")]
+        comm_cards = main.CommunityCards(cards)
+        suits = comm_cards.GetSuits()
+        correct_suits = [main.Card.Suit.DIAMOND, main.Card.Suit.CLUB, main.Card.Suit.HEART,
+                         main.Card.Suit.SPADE, main.Card.Suit.CLUB]
+        self.assertEqual(suits, correct_suits)
 
 
 if __name__ == "__main__":
