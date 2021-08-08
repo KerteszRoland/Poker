@@ -3,19 +3,34 @@ import main
 
 
 def GetDeck():
-    deck = [] 
+    deck = []
     suits = ["h", "d", "s", "c"]
     ranks = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"]
-    
+
     for suit in suits:
         for rank in ranks:
-            deck.append(rank+suit)
+            deck.append(rank + suit)
     return deck
 
-def GetCompleteCommCards():
-    cards = [main.Card("Ad"), main.Card("Qc"), main.Card("Kh"), main.Card("5s"), main.Card("10c")]
-    comm_cards = main.CommunityCards(cards)
-    return comm_cards
+
+def GetCardsByStr(str_list):
+    return [main.Card(x) for x in str_list]
+
+
+def GetCommCardsByStr(str_list):
+    return main.CommunityCards(GetCardsByStr(str_list))
+
+
+def GetHandByStr(str_list):
+    return main.Hand(GetCardsByStr(str_list))
+
+
+def IsFlushCorrect(flush, flush_str, suit):
+    return type(flush) is main.Evaluate.Flush and str(flush) == flush_str and str(flush.suit) == suit
+
+
+def IsStraightCorrect(straight, straight_str, high):
+    return type(straight) is main.Evaluate.Straight and str(straight) == straight_str and str(straight.high) == high
 
 
 class TestCard(unittest.TestCase):
@@ -49,7 +64,7 @@ class TestCard(unittest.TestCase):
         for card_str in cards:
             card = main.Card(card_str)
             suits.append(card.suit)
-        correct_suits = list("s"*3)+list("c"*3)+list("d"*3)+list("h"*3)
+        correct_suits = list("s" * 3) + list("c" * 3) + list("d" * 3) + list("h" * 3)
         self.assertEqual(suits, correct_suits)
 
     def test_display(self):
@@ -75,10 +90,10 @@ class TestCard(unittest.TestCase):
         card_str = "jD"
         card = main.Card(card_str)
         self.assertTrue(card.rank == "J" and card.suit == "d")
-        
+
 
 class TestHand(unittest.TestCase):
-   
+
     def test_str_empty(self):
         hand = main.Hand()
         self.assertEqual(str(hand), "")
@@ -95,18 +110,12 @@ class TestHand(unittest.TestCase):
         self.assertEqual(str(hand), "KdJs")
 
     def test_str_four_card(self):
-        card1 = main.Card("Js")
-        card2 = main.Card("Qc")
-        card3 = main.Card("Kd")
-        card4 = main.Card("Ah")
-        hand = main.Hand([card1, card2, card3, card4])
+        hand = main.Hand([main.Card("Js"), main.Card("Qc"), main.Card("Kd"), main.Card("Ah")])
         self.assertEqual(str(hand), "JsQcKdAh")
 
 
-
-
 class TestCommunityCards(unittest.TestCase):
-    
+
     def test_init_empty(self):
         comm_cards = main.CommunityCards()
         self.assertTrue(len(comm_cards.cards) == 0)
@@ -239,9 +248,90 @@ class TestCommunityCards(unittest.TestCase):
                  main.Card("5s"), main.Card("10c")]
         comm_cards = main.CommunityCards(cards)
         suits = comm_cards.GetSuits()
-        correct_suits = [main.Card.Suit.DIAMOND, main.Card.Suit.CLUB, main.Card.Suit.HEART,
-                         main.Card.Suit.SPADE, main.Card.Suit.CLUB]
+        correct_suits = [main.Suit.DIAMOND, main.Suit.CLUB, main.Suit.HEART,
+                         main.Suit.SPADE, main.Suit.CLUB]
         self.assertEqual(suits, correct_suits)
+
+
+class TestHandRead(unittest.TestCase):
+
+    def test_read_flush(self):
+        comm_cards = GetCommCardsByStr(["2s", "7c", "8c", "Jc", "Ah"])
+        myhand = GetHandByStr(["Kc", "Qc"])
+        temp = myhand.Read(comm_cards)
+        self.assertTrue(IsFlushCorrect(temp, "7c8cJcKcQc", main.Suit.CLUB))
+
+    def test_read_non_flush(self):
+        comm_cards = GetCommCardsByStr(["2s", "7c", "8c", "Jc", "Ah"])
+        myhand = GetHandByStr(["Ac", "4d"])
+        temp = myhand.Read(comm_cards)
+        self.assertEqual(temp, None)
+
+    def test_read_straight_wheel(self):
+        comm_cards = GetCommCardsByStr(["2s", "3c", "8d", "5c", "Ah"])
+        myhand = GetHandByStr(["Ac", "4d"])
+        temp = myhand.Read(comm_cards)
+        self.assertTrue(IsStraightCorrect(temp, "Ah2s3c4d5c", "5c"))
+
+    def test_read_straight_wheel_with_duplicates(self):
+        comm_cards = GetCommCardsByStr(["2s", "3c", "2d", "Ad", "5h"])
+        myhand = GetHandByStr(["Ac", "4d"])
+        temp = myhand.Read(comm_cards)
+        self.assertTrue(IsStraightCorrect(temp, "Ad2s3c4d5h", "5h"))
+
+    def test_read_non_straight_wheel(self):
+        comm_cards = GetCommCardsByStr(["2s", "3c", "8d", "Kc", "Ah"])
+        myhand = GetHandByStr(["Ac", "4d"])
+        temp = myhand.Read(comm_cards)
+        self.assertEqual(temp, None)
+
+    def test_read_non_straight(self):
+        comm_cards = GetCommCardsByStr(["2s", "Qs", "8d", "Kc", "Jh"])
+        myhand = GetHandByStr(["Ac", "4d"])
+        temp = myhand.Read(comm_cards)
+        self.assertEqual(temp, None)
+
+    def test_read_straight_bottom(self):
+        comm_cards = GetCommCardsByStr(["5s", "Qs", "8d", "Kc", "9h"])
+        myhand = GetHandByStr(["6c", "7d"])
+        temp = myhand.Read(comm_cards)
+        self.assertTrue(IsStraightCorrect(temp, "9h8d7d6c5s", "9h"))
+
+    def test_read_straight_middle(self):
+        comm_cards = GetCommCardsByStr(["2s", "9s", "8d", "10c", "Ah"])
+        myhand = GetHandByStr(["6c", "7d"])
+        temp = myhand.Read(comm_cards)
+        self.assertTrue(IsStraightCorrect(temp, "10c9s8d7d6c", "10c"))
+
+    def test_read_straight_top(self):
+        comm_cards = GetCommCardsByStr(["2s", "3h", "10s", "9d", "6c"])
+        myhand = GetHandByStr(["7c", "8d"])
+        temp = myhand.Read(comm_cards)
+        self.assertTrue(IsStraightCorrect(temp, "10s9d8d7c6c", "10s"))
+
+    def test_read_wheel_on_straight(self):
+        comm_cards = GetCommCardsByStr(["2s", "4s", "5d", "6c", "7h"])
+        myhand = GetHandByStr(["Ac", "3d"])
+        temp = myhand.Read(comm_cards)
+        self.assertTrue(IsStraightCorrect(temp, "7h6c5d4s3d", "7h"))
+
+    def test_read_straight_broadway(self):
+        comm_cards = GetCommCardsByStr(["As", "4s", "5d", "Kc", "Qh"])
+        myhand = GetHandByStr(["Jc", "10d"])
+        temp = myhand.Read(comm_cards)
+        self.assertTrue(IsStraightCorrect(temp, "AsKcQhJc10d", "As"))
+
+    def test_read_straight_on_comm(self):
+        comm_cards = GetCommCardsByStr(["5h", "6s", "7d", "8c", "9h"])
+        myhand = GetHandByStr(["2c", "2d"])
+        temp = myhand.Read(comm_cards)
+        self.assertTrue(IsStraightCorrect(temp, "9h8c7d6s5h", "9h"))
+
+    def test_read_flush_over_straight(self):
+        comm_cards = GetCommCardsByStr(["5c", "6c", "7d", "8c", "9h"])
+        myhand = GetHandByStr(["Ac", "Kc"])
+        temp = myhand.Read(comm_cards)
+        self.assertTrue(IsFlushCorrect(temp, "5c6c8cAcKc", main.Suit.CLUB))
 
 
 if __name__ == "__main__":
