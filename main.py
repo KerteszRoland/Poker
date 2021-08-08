@@ -1,6 +1,11 @@
-
-
 class Card:
+
+    class Suit:
+        HEART = "h"
+        DIAMOND = "d"
+        SPADE = "s"
+        CLUB = "c"
+
     def __init__(self, card_string):
         self.suit = card_string[-1].lower()
         self.rank = "".join(card_string[:-1]).upper()
@@ -36,6 +41,10 @@ class Hand:
 
     def __repr__(self):
         return "".join([x.display for x in self.cards])
+
+
+    #def Read(self, comm_cards):
+
 
 
 class CommunityCards:
@@ -90,3 +99,6 @@ class CommunityCards:
         if len(self.cards) > 4:
             raise Exception("Turn already pushed!")
         self.cards.append(card)
+
+    def GetSuits(self):
+        return [x.suit for x in self.cards]
