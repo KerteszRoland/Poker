@@ -259,13 +259,13 @@ class TestHandRead(unittest.TestCase):
         comm_cards = GetCommCardsByStr(["2s", "7c", "8c", "Jc", "Ah"])
         myhand = GetHandByStr(["Kc", "Qc"])
         temp = myhand.Read(comm_cards)
-        self.assertTrue(IsFlushCorrect(temp, "7c8cJcKcQc", main.Suit.CLUB))
+        self.assertTrue(IsFlushCorrect(temp, "KcQcJc8c7c", main.Suit.CLUB))
 
     def test_read_non_flush(self):
-        comm_cards = GetCommCardsByStr(["2s", "7c", "8c", "Jc", "Ah"])
+        comm_cards = GetCommCardsByStr(["2s", "7c", "8c", "Jc", "Qh"])
         myhand = GetHandByStr(["Ac", "4d"])
         temp = myhand.Read(comm_cards)
-        self.assertEqual(temp, None)
+        self.assertEqual(type(temp), main.Evaluate.High)
 
     def test_read_straight_wheel(self):
         comm_cards = GetCommCardsByStr(["2s", "3c", "8d", "5c", "Ah"])
@@ -280,16 +280,16 @@ class TestHandRead(unittest.TestCase):
         self.assertTrue(IsStraightCorrect(temp, "Ad2s3c4d5h", "5h"))
 
     def test_read_non_straight_wheel(self):
-        comm_cards = GetCommCardsByStr(["2s", "3c", "8d", "Kc", "Ah"])
+        comm_cards = GetCommCardsByStr(["2s", "3c", "8d", "Kc", "Jh"])
         myhand = GetHandByStr(["Ac", "4d"])
         temp = myhand.Read(comm_cards)
-        self.assertEqual(temp, None)
+        self.assertEqual(type(temp), main.Evaluate.High)
 
     def test_read_non_straight(self):
         comm_cards = GetCommCardsByStr(["2s", "Qs", "8d", "Kc", "Jh"])
         myhand = GetHandByStr(["Ac", "4d"])
         temp = myhand.Read(comm_cards)
-        self.assertEqual(temp, None)
+        self.assertEqual(type(temp), main.Evaluate.High)
 
     def test_read_straight_bottom(self):
         comm_cards = GetCommCardsByStr(["5s", "Qs", "8d", "Kc", "9h"])
@@ -331,7 +331,55 @@ class TestHandRead(unittest.TestCase):
         comm_cards = GetCommCardsByStr(["5c", "6c", "7d", "8c", "9h"])
         myhand = GetHandByStr(["Ac", "Kc"])
         temp = myhand.Read(comm_cards)
-        self.assertTrue(IsFlushCorrect(temp, "5c6c8cAcKc", main.Suit.CLUB))
+        self.assertTrue(IsFlushCorrect(temp, "AcKc8c6c5c", main.Suit.CLUB))
+
+    def test_read_quads(self):
+        comm_cards = GetCommCardsByStr(["Ac", "As", "Kd", "8c", "9h"])
+        myhand = GetHandByStr(["Ah", "Ad"])
+        temp = myhand.Read(comm_cards)
+        self.assertTrue(type(temp) == main.Evaluate.Quads and str(temp) == "AcAsAhAd+Kd")
+
+    def test_read_threeofkind(self):
+        comm_cards = GetCommCardsByStr(["Ac", "As", "Kd", "8c", "9h"])
+        myhand = GetHandByStr(["Ah", "2d"])
+        temp = myhand.Read(comm_cards)
+        self.assertTrue(type(temp) == main.Evaluate.ThreeOfKind and str(temp) == "AcAsAh+Kd9h")
+
+    def test_read_fullhouse(self):
+        comm_cards = GetCommCardsByStr(["Ac", "As", "Kd", "8c", "9h"])
+        myhand = GetHandByStr(["Ah", "Kc"])
+        temp = myhand.Read(comm_cards)
+        self.assertTrue(type(temp) == main.Evaluate.FullHouse and str(temp) == "AcAsAhKdKc")
+
+    def test_read_twopair(self):
+        comm_cards = GetCommCardsByStr(["Ac", "Js", "Kd", "8c", "9h"])
+        myhand = GetHandByStr(["Ah", "Kc"])
+        temp = myhand.Read(comm_cards)
+        self.assertTrue(type(temp) == main.Evaluate.TwoPair and str(temp) == "AcAhKdKc+Js")
+
+    def test_read_pair(self):
+        comm_cards = GetCommCardsByStr(["Ac", "Js", "Kd", "8c", "9h"])
+        myhand = GetHandByStr(["Ah", "Qc"])
+        temp = myhand.Read(comm_cards)
+        self.assertTrue(type(temp) == main.Evaluate.Pair and str(temp) == "AcAh+KdQcJs")
+
+    def test_read_high(self):
+        comm_cards = GetCommCardsByStr(["2c", "Js", "Kd", "8c", "9h"])
+        myhand = GetHandByStr(["Ah", "Qc"])
+        temp = myhand.Read(comm_cards)
+        self.assertTrue(type(temp) == main.Evaluate.High and str(temp) == "Ah+KdQcJs9h")
+
+    def test_read_straightflush(self):
+        comm_cards = GetCommCardsByStr(["5c", "6c", "7c", "2c", "Ac"])
+        myhand = GetHandByStr(["8c", "9c"])
+        temp = myhand.Read(comm_cards)
+        self.assertTrue(type(temp) == main.Evaluate.StraightFlush and str(temp) == "9c8c7c6c5c")
+
+    def test_read_royalflush(self):
+        comm_cards = GetCommCardsByStr(["5c", "6c", "10c", "Jc", "Qc"])
+        myhand = GetHandByStr(["Ac", "Kc"])
+        temp = myhand.Read(comm_cards)
+        self.assertTrue(type(temp) == main.Evaluate.RoyalFlush and str(temp) == "AcKcQcJc10c")
 
 
 if __name__ == "__main__":
