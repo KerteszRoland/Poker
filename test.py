@@ -91,6 +91,26 @@ class TestCard(unittest.TestCase):
         card = main.Card(card_str)
         self.assertTrue(card.rank == "J" and card.suit == "d")
 
+    def test_cannot_init_without_rank(self):
+        with self.assertRaises(main.PokerExceptions.IncorrectCardString):
+            main.Card("c")
+
+    def test_cannot_init_without_suit(self):
+        with self.assertRaises(main.PokerExceptions.IncorrectCardString):
+            main.Card("A")
+
+    def test_cannot_init_with_null_string(self):
+        with self.assertRaises(main.PokerExceptions.IncorrectCardString):
+            main.Card("")
+
+    def test_cannot_init_with_incorrect_suit(self):
+        with self.assertRaises(main.PokerExceptions.IncorrectSuit):
+            main.Card("Aq")
+
+    def test_cannot_init_with_incorrect_rank(self):
+        with self.assertRaises(main.PokerExceptions.IncorrectRank):
+            main.Card("Xs")
+
 
 class TestHand(unittest.TestCase):
 
@@ -380,6 +400,198 @@ class TestHandRead(unittest.TestCase):
         myhand = GetHandByStr(["Ac", "Kc"])
         temp = myhand.Read(comm_cards)
         self.assertTrue(type(temp) == main.Evaluate.RoyalFlush and str(temp) == "AcKcQcJc10c")
+
+
+class TestDeck(unittest.TestCase):
+    def test_empty_deck(self):
+        deck = main.Deck([])
+        self.assertTrue(deck.cards == [])
+
+    def test_generate_deck(self):
+        deck = main.Deck([])
+        deck.Generate()
+        is_correct = len(deck.cards) == 52 and type(deck.cards[0]) is main.Card
+        self.assertTrue(is_correct)
+
+    def test_str(self):
+        deck = main.Deck()
+        self.assertEqual(str(deck),
+                         "2h3h4h5h6h7h8h9h10hJhQhKhAh2d3d4d5d6d7d8d9d10dJdQdKdAd" +
+                         "2s3s4s5s6s7s8s9s10sJsQsKsAs2c3c4c5c6c7c8c9c10cJcQcKcAc")
+
+    def test_get_card(self):
+        deck = main.Deck()
+        card = deck.GetCard()
+        is_correct = card not in deck.cards and type(card) is main.Card
+        self.assertTrue(is_correct)
+
+    def test_get_all_the_cards(self):
+        deck = main.Deck()
+        cards = []
+        for i in range(52):
+            cards.append(deck.GetCard())
+        is_correct = deck.cards == [] and len(cards) == 52
+        self.assertTrue(is_correct)
+
+    def test_cannot_get_card_from_an_empty_deck(self):
+        with self.assertRaises(Exception):
+            deck = main.Deck([])
+            deck.GetCard()
+
+
+class TestHandvsHand(unittest.TestCase):
+
+    def test_high_eq_2hand(self):
+        comm_cards = GetCommCardsByStr(["6d", "7c", "9d", "10h", "Jh"])
+        myhand = GetHandByStr(["As", "Kc"])
+        herhand = GetHandByStr(["Ah", "Ks"])
+        my = myhand.Read(comm_cards)
+        her = herhand.Read(comm_cards)
+        self.assertEqual(my, her)
+
+    def test_high_card(self):
+        comm_cards = GetCommCardsByStr(["6d", "7c", "9d", "10h", "Jh"])
+        myhand = GetHandByStr(["As", "Qc"])
+        herhand = GetHandByStr(["Ah", "Ks"])
+        self.assertEqual(main.Evaluate.GetWinnerHands(comm_cards, [myhand, herhand]), [herhand])
+
+    def test_high_card_chop(self):
+        comm_cards = GetCommCardsByStr(["6d", "7c", "9d", "10h", "Jh"])
+        myhand = GetHandByStr(["As", "2c"])
+        herhand = GetHandByStr(["Ah", "3s"])
+        self.assertEqual(main.Evaluate.GetWinnerHands(comm_cards, [myhand, herhand]), [myhand, herhand])
+
+    def test_pair(self):
+        comm_cards = GetCommCardsByStr(["Ad", "7c", "9d", "Kh", "Jh"])
+        myhand = GetHandByStr(["As", "8c"])
+        herhand = GetHandByStr(["Ah", "Qs"])
+        self.assertEqual(main.Evaluate.GetWinnerHands(comm_cards, [myhand, herhand]), [herhand])
+
+    def test_pair_chop(self):
+        comm_cards = GetCommCardsByStr(["Ad", "7c", "9d", "Kh", "Jh"])
+        myhand = GetHandByStr(["As", "2c"])
+        herhand = GetHandByStr(["Ah", "3s"])
+        self.assertEqual(main.Evaluate.GetWinnerHands(comm_cards, [myhand, herhand]), [myhand, herhand])
+
+    def test_twopair(self):
+        comm_cards = GetCommCardsByStr(["Ad", "2c", "9d", "Kh", "2h"])
+        myhand = GetHandByStr(["As", "9c"])
+        herhand = GetHandByStr(["Ah", "Ks"])
+        self.assertEqual(main.Evaluate.GetWinnerHands(comm_cards, [myhand, herhand]), [herhand])
+
+    def test_twopair_chop(self):
+        comm_cards = GetCommCardsByStr(["Ad", "7c", "9d", "Kh", "Jh"])
+        myhand = GetHandByStr(["As", "Kc"])
+        herhand = GetHandByStr(["Ah", "Ks"])
+        self.assertEqual(main.Evaluate.GetWinnerHands(comm_cards, [myhand, herhand]), [myhand, herhand])
+
+    def test_threeofkind(self):
+        comm_cards = GetCommCardsByStr(["Ad", "Ac", "3d", "Kh", "2h"])
+        myhand = GetHandByStr(["As", "4c"])
+        herhand = GetHandByStr(["Ah", "5s"])
+        self.assertEqual(main.Evaluate.GetWinnerHands(comm_cards, [myhand, herhand]), [herhand])
+
+    def test_threeofkind_chop(self):
+        comm_cards = GetCommCardsByStr(["Ad", "Ac", "9d", "Kh", "10h"])
+        myhand = GetHandByStr(["As", "3c"])
+        herhand = GetHandByStr(["Ah", "4s"])
+        self.assertEqual(main.Evaluate.GetWinnerHands(comm_cards, [myhand, herhand]), [myhand, herhand])
+
+    def test_straight(self):
+        comm_cards = GetCommCardsByStr(["Qd", "Jc", "9d", "2h", "10h"])
+        myhand = GetHandByStr(["8s", "8c"])
+        herhand = GetHandByStr(["Ah", "Ks"])
+        self.assertEqual(main.Evaluate.GetWinnerHands(comm_cards, [myhand, herhand]), [herhand])
+
+    def test_straight_chop(self):
+        comm_cards = GetCommCardsByStr(["Qd", "Jc", "9d", "Kh", "10h"])
+        myhand = GetHandByStr(["As", "3c"])
+        herhand = GetHandByStr(["Ah", "4s"])
+        self.assertEqual(main.Evaluate.GetWinnerHands(comm_cards, [myhand, herhand]), [myhand, herhand])
+
+    def test_flush(self):
+        comm_cards = GetCommCardsByStr(["Qc", "Jc", "9d", "2c", "10h"])
+        myhand = GetHandByStr(["9c", "8c"])
+        herhand = GetHandByStr(["Ac", "3c"])
+        self.assertEqual(main.Evaluate.GetWinnerHands(comm_cards, [myhand, herhand]), [herhand])
+
+    def test_flush_eq(self):
+        comm_cards = GetCommCardsByStr(["2c", "Qc", "9c", "7c", "4c"])
+        myhand = GetHandByStr(["Jd", "3d"])
+        herhand = GetHandByStr(["Kd", "4d"])
+        self.assertTrue(myhand.Read(comm_cards) == herhand.Read(comm_cards))
+
+    def test_flush_not_eq(self):
+        comm_cards = GetCommCardsByStr(["Qc", "Jc", "9d", "2c", "10h"])
+        myhand = GetHandByStr(["9c", "8c"])
+        herhand = GetHandByStr(["10c", "3c"])
+        self.assertFalse(myhand.Read(comm_cards) == herhand.Read(comm_cards))
+
+    def test_flush_chop(self):
+        comm_cards = GetCommCardsByStr(["2c", "Qc", "9c", "7c", "4c"])
+        myhand = GetHandByStr(["Jd", "3d"])
+        herhand = GetHandByStr(["Kd", "4d"])
+        self.assertEqual(main.Evaluate.GetWinnerHands(comm_cards, [myhand, herhand]), [myhand, herhand])
+
+    def test_fullhouse(self):
+        comm_cards = GetCommCardsByStr(["Kc", "Ad", "Ah", "As", "Qc"])
+        myhand = GetHandByStr(["Qd", "3s"])
+        herhand = GetHandByStr(["Kh", "2h"])
+        self.assertEqual(main.Evaluate.GetWinnerHands(comm_cards, [myhand, herhand]), [herhand])
+
+    def test_fullhouse_chop(self):
+        comm_cards = GetCommCardsByStr(["Kc", "Ad", "Ah", "As", "4c"])
+        myhand = GetHandByStr(["Kh", "3s"])
+        herhand = GetHandByStr(["Kd", "2h"])
+        self.assertEqual(main.Evaluate.GetWinnerHands(comm_cards, [myhand, herhand]), [myhand, herhand])
+
+    def test_quads(self):
+        comm_cards = GetCommCardsByStr(["Kc", "Ad", "Ah", "As", "Qc"])
+        myhand = GetHandByStr(["Ks", "3s"])
+        herhand = GetHandByStr(["Ac", "2h"])
+        self.assertEqual(main.Evaluate.GetWinnerHands(comm_cards, [myhand, herhand]), [herhand])
+
+    def test_quads_chop(self):
+        comm_cards = GetCommCardsByStr(["Kc", "Kd", "Kh", "Ks", "4c"])
+        myhand = GetHandByStr(["Ah", "3s"])
+        herhand = GetHandByStr(["Ad", "2h"])
+        self.assertEqual(main.Evaluate.GetWinnerHands(comm_cards, [myhand, herhand]), [myhand, herhand])
+
+    def test_straightflush(self):
+        comm_cards = GetCommCardsByStr(["5c", "6c", "7c", "8c", "9c"])
+        myhand = GetHandByStr(["Kc", "4c"])
+        herhand = GetHandByStr(["Ac", "10c"])
+        self.assertEqual(main.Evaluate.GetWinnerHands(comm_cards, [myhand, herhand]), [herhand])
+
+    def test_straightflush_eq(self):
+        comm_cards = GetCommCardsByStr(["5c", "6c", "7c", "8c", "9c"])
+        myhand = GetHandByStr(["Kc", "4d"])
+        herhand = GetHandByStr(["Ac", "10d"])
+        self.assertTrue(myhand.Read(comm_cards) == herhand.Read(comm_cards))
+
+    def test_straightflush_not_eq(self):
+        comm_cards = GetCommCardsByStr(["5c", "6c", "7c", "8c", "9c"])
+        myhand = GetHandByStr(["Kc", "4c"])
+        herhand = GetHandByStr(["Ac", "10c"])
+        self.assertFalse(myhand.Read(comm_cards) == herhand.Read(comm_cards))
+
+    def test_straightflush_chop(self):
+        comm_cards = GetCommCardsByStr(["5c", "6c", "7c", "8c", "9c"])
+        myhand = GetHandByStr(["Kd", "4d"])
+        herhand = GetHandByStr(["Ad", "10d"])
+        self.assertEqual(main.Evaluate.GetWinnerHands(comm_cards, [myhand, herhand]), [myhand, herhand])
+
+    def test_royalflush(self):
+        comm_cards = GetCommCardsByStr(["10c", "Jc", "Qc", "Kc", "2d"])
+        myhand = GetHandByStr(["Kd", "4c"])
+        herhand = GetHandByStr(["Ac", "10s"])
+        self.assertEqual(main.Evaluate.GetWinnerHands(comm_cards, [myhand, herhand]), [herhand])
+
+    def test_royalflush_chop(self):
+        comm_cards = GetCommCardsByStr(["10c", "Jc", "Qc", "Kc", "Ac"])
+        myhand = GetHandByStr(["Kd", "4d"])
+        herhand = GetHandByStr(["Ad", "10d"])
+        self.assertEqual(main.Evaluate.GetWinnerHands(comm_cards, [myhand, herhand]), [myhand, herhand])
 
 
 if __name__ == "__main__":
