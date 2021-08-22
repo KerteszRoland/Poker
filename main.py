@@ -258,7 +258,7 @@ class Evaluate:
             return f"{''.join([x.display for x in self.quad_cards])}+{self.kicker_card}"
 
         def GetName(self):
-            return f"{self.quad_cards[0].rank} Quads + {self.kicker_cards.rank}"
+            return f"{self.quad_cards[0].rank} Quads + {self.kicker_card.rank}"
 
         def __gt__(self, other):
             if isinstance(other, Evaluate.PokerHand):
@@ -661,16 +661,39 @@ def GetRandomCommunityCards(deck):
     return comm_cards
 
 
+def asd(card_list):
+    comm_cards_cards = [Card(x) for x in card_list[4:]]
+    comm_cards = CommunityCards(comm_cards_cards)
+    print("Comm: "+str(comm_cards))
+
+    hand = Hand([Card(card_list[0]), Card(card_list[1])])
+    print("Hand1: "+str(hand))
+    evaled_hand = hand.Read(comm_cards)
+    print(evaled_hand.GetName())
+
+    hand2 = Hand([Card(card_list[2]), Card(card_list[3])])
+    print("Hand2: "+str(hand2))
+    evaled_hand2 = hand2.Read(comm_cards)
+    print(evaled_hand2.GetName())
+
+    if Evaluate.GetWinnerHands(comm_cards, [hand, hand2]) == [hand, hand2]:
+        print("Split Pot")
+    elif Evaluate.GetWinnerHands(comm_cards, [hand, hand2]) == [hand]:
+        print("Hand 1 won!")
+    else:
+        print("Hand 2 won!")
+
+"""
 deck = Deck()
-comm_cards = GetRandomCommunityCards(deck)
+comm_cards = CommunityCards([Card("JS"), Card("QH"), Card("3S"), Card("5S"), Card("6s")])
 print("Comm: "+str(comm_cards))
 
-hand = Hand([deck.GetCard(), deck.GetCard()])
+hand = Hand([Card("QD"), Card("7D")])
 print("Hand1: "+str(hand))
 evaled_hand = hand.Read(comm_cards)
 print(evaled_hand.GetName())
 
-hand2 = Hand([deck.GetCard(), deck.GetCard()])
+hand2 = Hand([Card("QC"), Card("8S")])
 print("Hand2: "+str(hand2))
 evaled_hand2 = hand2.Read(comm_cards)
 print(evaled_hand2.GetName())
@@ -681,3 +704,4 @@ elif Evaluate.GetWinnerHands(comm_cards, [hand, hand2]) == [hand]:
     print("Hand 1 won!")
 else:
     print("Hand 2 won!")
+"""
